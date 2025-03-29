@@ -1,0 +1,43 @@
+---
+  name: Basic Docker Build
+  
+  on:
+    push:
+      branches:
+        - main
+    pull_request:
+  
+  jobs:
+    build-image:
+      name: Build Image
+      runs-on: ubuntu-latest
+      steps:
+  
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        - name: Set date and build number
+          id: vars
+          run: |
+            # Set date in YYYY.MM.DD format (e.g., 2025.03.29)
+            DATE=$(date +%Y.%m.%d)
+            echo "build_date=$DATE" >> $GITHUB_OUTPUT
+            # Use github.run_number as a simple incrementing build number
+            BUILD_NUM=${{ github.run_number }}
+            echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+            # Combine into full tag
+            echo "full_tag=$DATE.$BUILD_NUM" >> $GITHUB_OUTPUT
+  
+        - name: Login to Docker Hub
+          uses: docker/login-action@v3
+          with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+  
+        - name: Docker Build
+          uses: docker/build-push-action@v6
+          with:
+            push: ${{ github.event_name != 'pull_request' }}
+            tags: |
+              ${{ secrets.DOCKERHUB_USERNAME }}/myhttpenv:latest
+              ${{ secrets.DOCKERHUB_USERNAME }}/myhttpenv:${{ steps.vars.outputs.full_tag }}
