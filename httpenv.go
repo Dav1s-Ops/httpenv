@@ -10,17 +10,17 @@ import (
 )
 
 func serve(w http.ResponseWriter, r *http.Request) {
-  env := map[string]string{}
-  for _, keyval := range os.Environ() {
-      keyval := strings.SplitN(keyval, "=", 2)
-      env[keyval[0]] = keyval[1]
-  }
-  bytes, err := json.Marshal(env)
-  if err != nil {
-      w.Write([]byte("{}"))
-      return
-  }
-  w.Write([]byte(bytes))
+    env := map[string]string{}
+    for _, keyval := range os.Environ() {
+        keyval := strings.SplitN(keyval, "=", 2)
+        env[keyval[0]] = keyval[1]
+    }
+    bytes, err := json.Marshal(env)
+    if err != nil {
+        w.Write([]byte("{}"))
+        return
+    }
+    w.Write([]byte(bytes))
 }
 
 func health(w http.ResponseWriter, r *http.Request) {
