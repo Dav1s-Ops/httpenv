@@ -1,12 +1,12 @@
-FROM golang:alpine
+FROM golang:alpine AS builder
 COPY httpenv.go /go
 RUN go build httpenv.go
 
-FROM alpine
+FROM alpine:3.19
 RUN addgroup -g 1000 httpenv \
     && adduser -u 1000 -G httpenv -D httpenv
-COPY --from=0 --chown=httpenv:httpenv /go/httpenv /httpenv
+COPY --from=builder --chown=httpenv:httpenv /go/httpenv /httpenv
 EXPOSE 8888
-# we're not changing user in this example, but you could:
-# USER httpenv
+USER httpenv
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8888/health || exit 1
 CMD ["/httpenv"]
