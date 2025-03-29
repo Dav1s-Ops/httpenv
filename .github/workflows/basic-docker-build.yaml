@@ -30,6 +30,9 @@ jobs:
           echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
           echo "full_tag=$DATE.$BUILD_NUM" >> $GITHUB_OUTPUT
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -56,3 +59,4 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
