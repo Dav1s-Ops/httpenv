@@ -17,10 +17,16 @@ func serve(w http.ResponseWriter, r *http.Request) {
     }
     bytes, err := json.Marshal(env)
     if err != nil {
-        w.Write([]byte("{}"))
+        _, writeErr := w.Write([]byte("{}"))
+        if writeErr != nil {
+            fmt.Fprintf(os.Stderr, "Failed to write fallback response: %v\n", writeErr)
+        }
         return
     }
-    w.Write([]byte(bytes))
+    _, err = w.Write([]byte(bytes))
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Failed to write response: %v\n", err)
+    }
 }
 
 func health(w http.ResponseWriter, r *http.Request) {
@@ -31,10 +37,16 @@ func health(w http.ResponseWriter, r *http.Request) {
     bytes, err := json.Marshal(status)
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)
-        w.Write([]byte(`{"status": "error"}`))
+        _, writeErr := w.Write([]byte(`{"status": "error"}`))
+        if writeErr != nil {
+            fmt.Fprintf(os.Stderr, "Failed to write error response: %v\n", writeErr)
+        }
         return
     }
-    w.Write(bytes)
+    _, err = w.Write(bytes)
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Failed to write health response: %v\n", err)
+    }
 }
 
 func main() {
