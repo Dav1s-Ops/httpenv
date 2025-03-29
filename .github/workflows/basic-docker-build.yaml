@@ -1,51 +1,58 @@
----
-  name: Basic Docker Build
-  
-  on:
-    push:
-      branches:
-        - main
-      paths-ignore:
-        - 'README.md'
-        - '.github/linters/**'
-    pull_request:
-      paths-ignore:
-        - 'README.md'
-        - '.github/linters/**'
-  
-  jobs:
-    build-image:
-      name: Build Image
-      runs-on: ubuntu-latest
-      steps:
-  
-        - name: Checkout code
-          uses: actions/checkout@v4
-  
-        - name: Set date and build number
-          id: vars
-          run: |
-            DATE=$(date +%y.%-m.%-d)
-            echo "build_date=$DATE" >> $GITHUB_OUTPUT
-            BUILD_NUM=${{ github.run_number }}
-            echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
-            echo "full_tag=$DATE.$BUILD_NUM" >> $GITHUB_OUTPUT
-        
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
-        
-        - name: Login to Docker Hub
-          uses: docker/login-action@v3
-          with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_TOKEN }}
-  
-        - name: Docker Build
-          uses: docker/build-push-action@v6
-          with:
-            push: ${{ github.event_name != 'pull_request' }}
-            tags: |
-              ${{ secrets.DOCKERHUB_USERNAME }}/myhttpenv:latest
-              ${{ secrets.DOCKERHUB_USERNAME }}/myhttpenv:${{ steps.vars.outputs.full_tag }}
-            cache-from: type=gha
-            cache-to: type=gha,mode=max
+name: Basic Docker Build
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - '.github/linters/**'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - '.github/linters/**'
+
+jobs:
+  build-image:
+    name: Build Image
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set date and build number
+        id: vars
+        run: |
+          DATE=$(date +%y.%-m.%-d)
+          echo "build_date=$DATE" >> $GITHUB_OUTPUT
+          BUILD_NUM=${{ github.run_number }}
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+          echo "full_tag=$DATE.$BUILD_NUM" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/myhttpenv
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.vars.outputs.full_tag }}
+
+      - name: Docker Build
+        uses: docker/build-push-action@v6
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
