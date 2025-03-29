@@ -2,25 +2,25 @@
 # template source: https://github.com/bretfisher/docker-build-workflow/blob/main/templates/call-docker-build.yaml
 name: Docker Build
 
-on:
-  push:
-    branches:
-      - main
-    # don't rebuild image if someone only edited unrelated files
-    paths-ignore:
-      - 'README.md'
-      - '.github/linters/**'
-  pull_request:
-    # don't rebuild image if someone only edited unrelated files
-    paths-ignore:
-      - 'README.md'
-      - '.github/linters/**'
-  schedule:
-    # re-run montly to keep image fresh with upstream base images
-    - cron: '0 12 15 * *'
-  workflow_dispatch:
-    # run manually from Actions tab
-
+# on:
+#   push:
+#     branches:
+#       - main
+#     # don't rebuild image if someone only edited unrelated files
+#     paths-ignore:
+#       - 'README.md'
+#       - '.github/linters/**'
+#   pull_request:
+#     # don't rebuild image if someone only edited unrelated files
+#     paths-ignore:
+#       - 'README.md'
+#       - '.github/linters/**'
+#   schedule:
+#     # re-run montly to keep image fresh with upstream base images
+#     - cron: '0 12 15 * *'
+#   workflow_dispatch:
+#     # run manually from Actions tab
+on: workflow_dispatch
 
 jobs:
   call-docker-build:
