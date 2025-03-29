@@ -9,7 +9,7 @@ import (
     "time"
 )
 
-func serve(w http.ResponseWriter, r *http.Request) {
+func serve(w http.ResponseWriter, _ *http.Request) {
     env := map[string]string{}
     for _, keyval := range os.Environ() {
         keyval := strings.SplitN(keyval, "=", 2)
@@ -23,13 +23,13 @@ func serve(w http.ResponseWriter, r *http.Request) {
         }
         return
     }
-    _, err = w.Write([]byte(bytes))
+    _, err = w.Write(bytes)
     if err != nil {
         fmt.Fprintf(os.Stderr, "Failed to write response: %v\n", err)
     }
 }
 
-func health(w http.ResponseWriter, r *http.Request) {
+func health(w http.ResponseWriter, _ *http.Request) {
     status := map[string]string{
         "status": "healthy",
         "time":   fmt.Sprintf("%v", time.Now()),
@@ -53,7 +53,13 @@ func main() {
     fmt.Printf("Starting httpenv listening on port 8888.\n")
     http.HandleFunc("/", serve)
     http.HandleFunc("/health", health)
-    if err := http.ListenAndServe(":8888", nil); err != nil {
+    server := &http.Server{
+        Addr:         ":8888",
+        Handler:      nil,
+        ReadTimeout:  10 * time.Second,
+        WriteTimeout: 10 * time.Second,
+    }
+    if err := server.ListenAndServe(); err != nil {
         panic(err)
     }
 }
