@@ -60,7 +60,7 @@ jobs:
           exit-code: 0
           format: table 
 
-      - name: Docker Metadata
+      - name: Docker Metadata for Final Image Build
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -69,7 +69,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=${{ steps.vars.outputs.full_tag }}
 
-      - name: Docker Build
+      - name: Docker Build and Push to Docker Hub
         uses: docker/build-push-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
