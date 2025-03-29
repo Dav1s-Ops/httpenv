@@ -49,6 +49,7 @@ jobs:
       ### NOTE if Docker Hub is set to true, you must set secrets above and also add account/repo/tags below
       dockerhub-enable: true
       ghcr-enable: true
+      push: ${{ github.event_name != 'pull_request' }}
 
       ### A list of the account/repo names for docker build. List should match what's enabled above
       ### defaults to:
